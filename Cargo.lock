@@ -466,6 +466,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "demo-stm32g0-nucleo"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "cortex-m",
+ "cortex-m-rt",
+ "kern",
+ "panic-halt",
+ "panic-itm",
+ "panic-semihosting",
+ "stm32g0",
+]
+
+[[package]]
 name = "demo-stm32h7-nucleo"
 version = "0.1.0"
 dependencies = [
@@ -758,6 +773,67 @@ dependencies = [
 ]
 
 [[package]]
+name = "drv-stm32g0-gpio"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "cortex-m",
+ "drv-stm32g0-rcc-api",
+ "num-traits",
+ "stm32g0",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "drv-stm32g0-gpio-api"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "idol",
+ "num-traits",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "drv-stm32g0-rcc"
+version = "0.1.0"
+dependencies = [
+ "idol",
+ "idol-runtime",
+ "num-traits",
+ "stm32g0",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "drv-stm32g0-rcc-api"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "idol",
+ "num-traits",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "drv-stm32g0-usart"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-semihosting",
+ "drv-stm32g0-gpio-api",
+ "drv-stm32g0-rcc-api",
+ "num-traits",
+ "stm32g0",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
 name = "drv-stm32h7-gpio"
 version = "0.1.0"
 dependencies = [
@@ -902,6 +978,7 @@ dependencies = [
  "build-util",
  "cfg-if 0.1.10",
  "drv-lpc55-gpio-api",
+ "drv-stm32g0-gpio-api",
  "drv-stm32h7-gpio-api",
  "idol",
  "idol-runtime",
@@ -2244,6 +2321,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "stm32g0"
+version = "0.14.0"
+source = "git+https://github.com/stm32-rs/stm32-rs-nightlies?branch=master#b95a13a3ba50d410db72975da16aa14081e480c3"
+dependencies = [
+ "bare-metal 1.0.0",
+ "cortex-m",
+ "vcell",
+]
+
+[[package]]
 name = "stm32h7"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2365,7 +2452,9 @@ name = "task-jefe"
 version = "0.1.0"
 dependencies = [
  "abi",
+ "build-util",
  "cortex-m",
+ "cortex-m-semihosting",
  "hubris-num-tasks",
  "num-traits",
  "ringbuf",
@@ -2377,6 +2466,7 @@ dependencies = [
 name = "task-ping"
 version = "0.1.0"
 dependencies = [
+ "build-util",
  "cortex-m",
  "drv-user-leds-api",
  "userlib",
@@ -2653,6 +2743,7 @@ version = "0.1.0"
 dependencies = [
  "abi",
  "bstringify",
+ "build-util",
  "num-derive",
  "num-traits",
  "paste",
