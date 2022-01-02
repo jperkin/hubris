@@ -28,6 +28,7 @@
 
 #![cfg_attr(target_os = "none", no_std)]
 #![feature(asm)]
+#![feature(fn_align)]
 #![feature(naked_functions)]
 
 #[macro_use]
