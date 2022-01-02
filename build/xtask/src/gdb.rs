@@ -7,6 +7,9 @@ use std::process::Command;
 
 use crate::Config;
 
+const ARM_GDB_NAMES: [&str; 2] = ["arm-none-eabi-gdb", "gdb-multiarch"];
+const RISCV_GDB_NAMES: [&str; 2] = ["riscv64-unknown-elf-gdb", "gdb-multiarch"];
+
 pub fn run(cfg: &Path, gdb_cfg: &Path) -> anyhow::Result<()> {
     ctrlc::set_handler(|| {}).expect("Error setting Ctrl-C handler");
 
@@ -22,8 +25,15 @@ pub fn run(cfg: &Path, gdb_cfg: &Path) -> anyhow::Result<()> {
 
     let mut cmd = None;
 
-    const GDB_NAMES: [&str; 2] = ["arm-none-eabi-gdb", "gdb-multiarch"];
-    for candidate in &GDB_NAMES {
+    let gdb_names = if toml.target.starts_with("riscv") {
+        RISCV_GDB_NAMES
+    } else if toml.target.starts_with("thumb") {
+        ARM_GDB_NAMES
+    } else {
+        anyhow::bail!("unsupported target");
+    };
+
+    for candidate in gdb_names {
         if Command::new(candidate).arg("--version").status().is_ok() {
             cmd = Some(Command::new(candidate));
             break;
@@ -31,7 +41,7 @@ pub fn run(cfg: &Path, gdb_cfg: &Path) -> anyhow::Result<()> {
     }
 
     let mut cmd =
-        cmd.ok_or(anyhow::anyhow!("GDB not found.  Tried: {:?}", GDB_NAMES))?;
+        cmd.ok_or(anyhow::anyhow!("GDB not found.  Tried: {:?}", gdb_names))?;
 
     cmd.arg("-q")
         .arg("-x")

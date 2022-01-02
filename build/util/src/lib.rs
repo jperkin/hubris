@@ -18,6 +18,8 @@ pub fn expose_m_profile() {
         println!("cargo:rustc-cfg=armv7m");
     } else if target.starts_with("thumbv8m") {
         println!("cargo:rustc-cfg=armv8m");
+    } else if target.starts_with("riscv32imac") {
+        println!("cargo:rustc-cfg=riscv32");
     } else {
         println!("Don't know the target {}", target);
         std::process::exit(1);

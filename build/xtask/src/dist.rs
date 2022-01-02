@@ -28,6 +28,22 @@ use lpc55_sign::{crc_image, sign_ecc, signed_image};
 /// padded that a bit.
 const DEFAULT_KERNEL_STACK: u32 = 1024;
 
+enum ArchTarget {
+    ARM,
+    RISCV,
+}
+
+const ARM_CONSTS: [&str; 3] = [
+    "arm-none-eabi-objcopy",
+    "elf32-littlearm",
+    "build/task-link.x",
+];
+const RISCV_CONSTS: [&str; 3] = [
+    "riscv64-unknown-elf-objcopy",
+    "elf32-littleriscv",
+    "build/task-link-riscv.x",
+];
+
 pub fn package(
     verbose: bool,
     edges: bool,
@@ -48,6 +64,24 @@ pub fn package(
 
     let mut out = PathBuf::from("target");
     let buildstamp_file = out.join("buildstamp");
+
+    // xtask is built for the host system so we need to go with the target
+    // specified in the app toml to decide which binutils and support files
+    // to use
+    let arch_target = if toml.target.starts_with("thumb") {
+        ArchTarget::ARM
+    } else if toml.target.starts_with("riscv") {
+        ArchTarget::RISCV
+    } else {
+        bail!("unsupported target");
+    };
+
+    let (objcopy_cmd, objcopy_target, link_script) = match arch_target {
+        ArchTarget::ARM => (ARM_CONSTS[0], ARM_CONSTS[1], ARM_CONSTS[2]),
+        ArchTarget::RISCV => {
+            (RISCV_CONSTS[0], RISCV_CONSTS[1], RISCV_CONSTS[2])
+        }
+    };
 
     out.push(&toml.name);
     out.push("dist");
@@ -237,6 +271,7 @@ pub fn package(
         let _ = fs::remove_file("target/link.x");
 
         build(
+            &arch_target,
             &toml.target,
             &toml.board,
             &src_dir.join(&bootloader.path),
@@ -255,7 +290,8 @@ pub fn package(
 
         // Need a bootloader binary for signing
         objcopy_translate_format(
-            "elf32-littlearm",
+            &objcopy_cmd,
+            &objcopy_target,
             &out.join(&bootloader.name),
             "binary",
             &out.join("bootloader.bin"),
@@ -272,7 +308,8 @@ pub fn package(
         // via linker.
 
         objcopy_grab_binary(
-            "elf32-littlearm",
+            &objcopy_cmd,
+            &objcopy_target,
             &out.join(&bootloader.name),
             &out.join("addr_blob.bin"),
         )?;
@@ -307,6 +344,7 @@ pub fn package(
         let task_toml = &toml.tasks[name];
 
         generate_task_linker_script(
+            &arch_target,
             "memory.x",
             &allocs.tasks[name],
             Some(&task_toml.sections),
@@ -319,9 +357,10 @@ pub fn package(
         )
         .context(format!("failed to generate linker script for {}", name))?;
 
-        fs::copy("build/task-link.x", "target/link.x")?;
+        fs::copy(link_script, "target/link.x")?;
 
         build(
+            &arch_target,
             &toml.target,
             &toml.board,
             &src_dir.join(&task_toml.path),
@@ -379,6 +418,7 @@ pub fn package(
     let descriptor_text = descriptor_text.join("\n");
 
     generate_kernel_linker_script(
+        &arch_target,
         "memory.x",
         &allocs.kernel,
         toml.kernel.stacksize.unwrap_or(DEFAULT_KERNEL_STACK),
@@ -390,6 +430,7 @@ pub fn package(
 
     // Build the kernel.
     build(
+        &arch_target,
         &toml.target,
         &toml.board,
         &src_dir.join(&toml.kernel.path),
@@ -429,18 +470,21 @@ pub fn package(
 
     // Convert SREC to other formats for convenience.
     objcopy_translate_format(
+        &objcopy_cmd,
         "srec",
         &out.join("combined.srec"),
-        "elf32-littlearm",
+        &objcopy_target,
         &out.join("combined.elf"),
     )?;
     objcopy_translate_format(
+        &objcopy_cmd,
         "srec",
         &out.join("combined.srec"),
         "ihex",
         &out.join("combined.ihex"),
     )?;
     objcopy_translate_format(
+        &objcopy_cmd,
         "srec",
         &out.join("combined.srec"),
         "binary",
@@ -484,13 +528,15 @@ pub fn package(
         )?;
 
         objcopy_translate_format(
+            &objcopy_cmd,
             "srec",
             &out.join("final.srec"),
-            "elf32-littlearm",
+            &objcopy_target,
             &out.join("final.elf"),
         )?;
 
         objcopy_translate_format(
+            &objcopy_cmd,
             "srec",
             &out.join("final.srec"),
             "ihex",
@@ -498,6 +544,7 @@ pub fn package(
         )?;
 
         objcopy_translate_format(
+            &objcopy_cmd,
             "srec",
             &out.join("final.srec"),
             "binary",
@@ -791,7 +838,26 @@ fn generate_bootloader_linker_script(
     writeln!(linkscr, "IMAGEA = ORIGIN(IMAGEA_FLASH);").unwrap();
 }
 
+fn generate_linker_aliases(
+    arch_target: &ArchTarget,
+    linkscr: &mut File,
+) -> Result<()> {
+    match arch_target {
+        ArchTarget::ARM => {}
+        ArchTarget::RISCV => {
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_TEXT\", FLASH);")?;
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_RODATA\", FLASH);")?;
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_DATA\", RAM);")?;
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_BSS\", RAM);")?;
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_HEAP\", RAM);")?;
+            writeln!(linkscr, "REGION_ALIAS(\"REGION_STACK\", RAM);")?;
+        }
+    }
+    Ok(())
+}
+
 fn generate_task_linker_script(
+    arch_target: &ArchTarget,
     name: &str,
     map: &BTreeMap<String, Range<u32>>,
     sections: Option<&IndexMap<String, String>>,
@@ -847,10 +913,13 @@ fn generate_task_linker_script(
         writeln!(linkscr, "}} INSERT BEFORE .got")?;
     }
 
+    generate_linker_aliases(&arch_target, &mut linkscr)?;
+
     Ok(())
 }
 
 fn generate_kernel_linker_script(
+    arch_target: &ArchTarget,
     name: &str,
     map: &BTreeMap<String, Range<u32>>,
     stacksize: u32,
@@ -902,21 +971,39 @@ fn generate_kernel_linker_script(
         .unwrap();
     }
     writeln!(linkscr, "}}").unwrap();
-    writeln!(linkscr, "__eheap = ORIGIN(RAM) + LENGTH(RAM);").unwrap();
-    writeln!(linkscr, "_stack_base = 0x{:08x};", stack_base.unwrap()).unwrap();
-    writeln!(linkscr, "_stack_start = 0x{:08x};", stack_start.unwrap())
-        .unwrap();
-    writeln!(linkscr, "SECTIONS {{").unwrap();
-    writeln!(linkscr, "  .hubris_app_table : AT(__erodata) {{").unwrap();
-    writeln!(linkscr, "    hubris_app_table = .;").unwrap();
-    writeln!(linkscr, "{}", descriptor).unwrap();
-    writeln!(linkscr, "  }} > FLASH").unwrap();
-    writeln!(linkscr, "}} INSERT AFTER .data").unwrap();
+    match arch_target {
+        ArchTarget::ARM => {
+            writeln!(linkscr, "__eheap = ORIGIN(RAM) + LENGTH(RAM);").unwrap();
+            writeln!(linkscr, "_stack_base = 0x{:08x};", stack_base.unwrap())
+                .unwrap();
+            writeln!(linkscr, "_stack_start = 0x{:08x};", stack_start.unwrap())
+                .unwrap();
+            writeln!(linkscr, "SECTIONS {{").unwrap();
+            writeln!(linkscr, "  .hubris_app_table : AT(__erodata) {{")
+                .unwrap();
+            writeln!(linkscr, "    hubris_app_table = .;").unwrap();
+            writeln!(linkscr, "{}", descriptor).unwrap();
+            writeln!(linkscr, "  }} > FLASH").unwrap();
+            writeln!(linkscr, "}} INSERT AFTER .data").unwrap();
+        }
+        ArchTarget::RISCV => {
+            writeln!(linkscr, "__eheap = ORIGIN(RAM) + LENGTH(RAM);").unwrap();
+            writeln!(linkscr, "SECTIONS {{").unwrap();
+            writeln!(linkscr, "  .hubris_app_table : {{").unwrap();
+            writeln!(linkscr, "    hubris_app_table = .;").unwrap();
+            writeln!(linkscr, "{}", descriptor).unwrap();
+            writeln!(linkscr, "  }} > FLASH").unwrap();
+            writeln!(linkscr, "}} INSERT AFTER .data").unwrap();
+        }
+    }
+
+    generate_linker_aliases(&arch_target, &mut linkscr)?;
 
     Ok(())
 }
 
 fn build(
+    arch_target: &ArchTarget,
     target: &str,
     board_name: &str,
     path: &Path,
@@ -974,21 +1061,45 @@ fn build(
         .map(|r| format!(" --remap-path-prefix={}={}", r.0.display(), r.1))
         .collect();
     cmd.current_dir(path);
-    cmd.env(
-        "RUSTFLAGS",
-        &format!(
-            "-C link-arg=-Tlink.x \
-             -L {} \
-             -C link-arg=-z -C link-arg=common-page-size=0x20 \
-             -C link-arg=-z -C link-arg=max-page-size=0x20 \
-             -C llvm-args=--enable-machine-outliner=never \
-             -C overflow-checks=y \
-             {}
-             ",
-            canonical_cargo_out_dir.display(),
-            remap_path_prefix,
-        ),
-    );
+    match arch_target {
+        ArchTarget::ARM => {
+            cmd.env(
+                "RUSTFLAGS",
+                &format!(
+                    "
+                     -C link-arg=-Tlink.x \
+                     -L {} \
+                     -C link-arg=-z -C link-arg=common-page-size=0x20 \
+                     -C link-arg=-z -C link-arg=max-page-size=0x20 \
+                     -C llvm-args=--enable-machine-outliner=never \
+                     -C overflow-checks=y \
+                     {}
+                     ",
+                    canonical_cargo_out_dir.display(),
+                    remap_path_prefix,
+                ),
+            );
+        }
+        ArchTarget::RISCV => {
+            cmd.env(
+                "RUSTFLAGS",
+                &format!(
+                    "
+                     -C link-arg=-Tmemory.x \
+                     -C link-arg=-Tlink.x \
+                     -L {} \
+                     -C link-arg=-z -C link-arg=common-page-size=0x20 \
+                     -C link-arg=-z -C link-arg=max-page-size=0x20 \
+                     -C llvm-args=--enable-machine-outliner=never \
+                     -C overflow-checks=y \
+                     {}
+                     ",
+                    canonical_cargo_out_dir.display(),
+                    remap_path_prefix,
+                ),
+            );
+        }
+    };
 
     cmd.env("HUBRIS_TASKS", task_names);
     cmd.env("HUBRIS_BOARD", board_name);
@@ -1321,6 +1432,7 @@ fn make_descriptors(
     let power_of_two_required = match target {
         "thumbv8m.main-none-eabihf" => false,
         "thumbv7em-none-eabihf" => true,
+        "riscv32imac-unknown-none-elf" => true,
         t => panic!("Unknown mpu requirements for target '{}'", t),
     };
 
@@ -1582,8 +1694,10 @@ fn load_elf(
     if elf.header.container()? != Container::Little {
         bail!("where did you get a big-endian image?");
     }
-    if elf.header.e_machine != goblin::elf::header::EM_ARM {
-        bail!("this is not an ARM file");
+    if elf.header.e_machine != goblin::elf::header::EM_ARM
+        && elf.header.e_machine != goblin::elf::header::EM_RISCV
+    {
+        bail!("this is not an ARM or RISC-V file");
     }
 
     let mut flash = 0;
@@ -1763,8 +1877,13 @@ fn write_srec(
     Ok(())
 }
 
-fn objcopy_grab_binary(in_format: &str, src: &Path, dest: &Path) -> Result<()> {
-    let mut cmd = Command::new("arm-none-eabi-objcopy");
+fn objcopy_grab_binary(
+    objcopy_cmd: &str,
+    in_format: &str,
+    src: &Path,
+    dest: &Path,
+) -> Result<()> {
+    let mut cmd = Command::new(objcopy_cmd);
     cmd.arg("-I")
         .arg(in_format)
         .arg("-O")
@@ -1781,12 +1900,13 @@ fn objcopy_grab_binary(in_format: &str, src: &Path, dest: &Path) -> Result<()> {
 }
 
 fn objcopy_translate_format(
+    objcopy_cmd: &str,
     in_format: &str,
     src: &Path,
     out_format: &str,
     dest: &Path,
 ) -> Result<()> {
-    let mut cmd = Command::new("arm-none-eabi-objcopy");
+    let mut cmd = Command::new(objcopy_cmd);
     cmd.arg("-I")
         .arg(in_format)
         .arg("-O")
