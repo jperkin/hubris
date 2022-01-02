@@ -1,0 +1,28 @@
+[package]
+edition = "2018"
+readme = "README.md"
+name = "sparkfun-redv"
+version = "0.1.0"
+
+[features]
+semihosting = ["kern/klog-semihosting-riscv"]
+
+[dependencies]
+cfg-if = "0.1.10"
+hifive1 = { version = "0.10.0", features = ["board-redv"] }
+panic-halt = "0.2.0"
+riscv = { version = "0.7", features = ["inline-asm"] }
+riscv-rt = { version = "0.8.0", features = ["inline-asm"] }
+
+[dependencies.kern]
+path = "../../sys/kern"
+default-features = false
+
+[build-dependencies]
+build-util = {path = "../../build/util"}
+
+# this lets you use `cargo fix`!
+[[bin]]
+name = "sparkfun-redv"
+test = false
+bench = false

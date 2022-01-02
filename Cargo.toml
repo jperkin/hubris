@@ -24,6 +24,7 @@ members = [
     "app/gimlet-rot",
     "app/gimletlet",
     "app/lpc55xpresso",
+    "app/sparkfun-redv",
     "app/sidecar",
 
     "task/template",
