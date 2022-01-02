@@ -99,3 +99,11 @@ path = "sys/userlib"
 
 [patch."https://github.com/oxidecomputer/hubris".abi]
 path = "sys/abi"
+
+[patch.crates-io.riscv-rt]
+git = "https://github.com/rust-embedded/riscv-rt"
+branch = "master"
+
+[patch.crates-io.riscv]
+git = "https://github.com/jperkin/riscv"
+branch = "master"

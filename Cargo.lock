@@ -300,7 +300,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "454f278bf469e2de0a4d22ea019d169d8944f86957c8207a39e3f66c32be2fc6"
 dependencies = [
  "cortex-m-rt-macros",
- "r0",
+ "r0 0.2.2",
 ]
 
 [[package]]
@@ -359,7 +359,7 @@ dependencies = [
  "bare-metal 1.0.0",
  "cfg-if 1.0.0",
  "cortex-m",
- "riscv",
+ "riscv 0.7.0",
 ]
 
 [[package]]
@@ -369,7 +369,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f83bd3bb4314701c568e340cd8cf78c975aa0ca79e03d3f6d1677d5b0c9c0c03"
 dependencies = [
  "generic-array",
- "rand_core",
+ "rand_core 0.6.3",
  "subtle",
  "zeroize",
 ]
@@ -932,6 +932,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453440c271cf5577fd2a40e4942540cb7d0d2f85e27c8d07dd0023c925a67541"
 
 [[package]]
+name = "e310x"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b4f6d3e0a8850b1143b2c3058a190c71346a84caef6c2e1d55320e337d4a839"
+dependencies = [
+ "bare-metal 0.2.5",
+ "riscv 0.6.0",
+ "vcell",
+]
+
+[[package]]
+name = "e310x-hal"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b261dbfefe6b4dcb3a827441e18b882d2bfa4c5ca559cf7c27ed70a329e22031"
+dependencies = [
+ "e310x",
+ "embedded-hal",
+ "nb 1.0.0",
+ "riscv 0.6.0",
+]
+
+[[package]]
 name = "ecdsa"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -954,7 +977,7 @@ dependencies = [
  "generic-array",
  "group",
  "pkcs8",
- "rand_core",
+ "rand_core 0.6.3",
  "subtle",
  "zeroize",
 ]
@@ -981,7 +1004,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0f40b2dcd8bc322217a5f6559ae5f9e9d1de202a2ecee2e9eafcbece7562a4f"
 dependencies = [
- "rand_core",
+ "rand_core 0.6.3",
  "subtle",
 ]
 
@@ -1141,7 +1164,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c363a5301b8f153d80747126a04b3c82073b9fe3130571a9d170cacdeaf7912"
 dependencies = [
  "ff",
- "rand_core",
+ "rand_core 0.6.3",
  "subtle",
 ]
 
@@ -1205,6 +1228,18 @@ dependencies = [
  "pkg-version",
  "postcard",
  "serde",
+]
+
+[[package]]
+name = "hifive1"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f3f660a0f39d48a1b0c8b6da4008573a93545d778e9ece62640991f63b28730"
+dependencies = [
+ "e310x-hal",
+ "embedded-hal",
+ "nb 1.0.0",
+ "riscv 0.6.0",
 ]
 
 [[package]]
@@ -1299,6 +1334,9 @@ dependencies = [
  "cfg-if 0.1.10",
  "cortex-m",
  "cortex-m-semihosting",
+ "riscv 0.7.0",
+ "riscv-rt",
+ "riscv-semihosting",
  "serde",
  "ssmarshal",
  "zerocopy",
@@ -1511,7 +1549,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-traits",
- "rand",
+ "rand 0.8.4",
  "smallvec",
  "zeroize",
 ]
@@ -1815,10 +1853,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2a38df5b15c8d5c7e8654189744d8e396bddc18ad48041a500ce52d6948941f"
 
 [[package]]
+name = "r0"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd7a31eed1591dcbc95d92ad7161908e72f4677f8fabf2a32ca49b4237cbf211"
+
+[[package]]
 name = "radium"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "643f8f41a8ebc4c5dc4515c82bb8abd397b527fc20fd681b7c011c2aee5d44fb"
+
+[[package]]
+name = "rand"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
+dependencies = [
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "rand_hc 0.2.0",
+ "rand_pcg",
+]
 
 [[package]]
 name = "rand"
@@ -1827,9 +1883,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e7573632e6454cf6b99d7aac4ccca54be06da05aca2ef7423d22d27d4d4bcd8"
 dependencies = [
  "libc",
- "rand_chacha",
- "rand_core",
- "rand_hc",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "rand_hc 0.3.1",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
+dependencies = [
+ "ppv-lite86",
+ "rand_core 0.5.1",
 ]
 
 [[package]]
@@ -1839,8 +1905,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
 dependencies = [
  "ppv-lite86",
- "rand_core",
+ "rand_core 0.6.3",
 ]
+
+[[package]]
+name = "rand_core"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90bde5296fc891b0cef12a6d03ddccc162ce7b2aff54160af9338f8d40df6d19"
 
 [[package]]
 name = "rand_core"
@@ -1853,11 +1925,29 @@ dependencies = [
 
 [[package]]
 name = "rand_hc"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
+dependencies = [
+ "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_hc"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d51e9f596de227fda2ea6c84607f5558e196eeaf43c986b724ba4fb8fdf497e7"
 dependencies = [
- "rand_core",
+ "rand_core 0.6.3",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16abd0c1b639e9eb4d7c50c0b8100b0d0f849be2349829c740fe8e6eb4816429"
+dependencies = [
+ "rand_core 0.5.1",
 ]
 
 [[package]]
@@ -1895,13 +1985,54 @@ dependencies = [
 
 [[package]]
 name = "riscv"
-version = "0.7.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6907ccdd7a31012b70faf2af85cd9e5ba97657cc3987c4f13f8e4d2c2a088aba"
+checksum = "a2f0b705d428e9d0f78e2bb73093887ee58a83c9688de3faedbb4c0631c4618e"
+dependencies = [
+ "bare-metal 0.2.5",
+ "bit_field",
+ "riscv-target",
+]
+
+[[package]]
+name = "riscv"
+version = "0.7.0"
+source = "git+https://github.com/jperkin/riscv?branch=master#57cfb47b2b9a1f46032f304f11cc8a155f17dc8f"
 dependencies = [
  "bare-metal 1.0.0",
  "bit_field",
+ "embedded-hal",
  "riscv-target",
+]
+
+[[package]]
+name = "riscv-rt"
+version = "0.8.0"
+source = "git+https://github.com/rust-embedded/riscv-rt?branch=master#1e9c004085b8a212eb390541edcc417b964925ac"
+dependencies = [
+ "r0 1.0.0",
+ "riscv 0.7.0",
+ "riscv-rt-macros",
+ "riscv-target",
+]
+
+[[package]]
+name = "riscv-rt-macros"
+version = "0.1.6"
+source = "git+https://github.com/rust-embedded/riscv-rt?branch=master#1e9c004085b8a212eb390541edcc417b964925ac"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rand 0.7.3",
+ "syn",
+]
+
+[[package]]
+name = "riscv-semihosting"
+version = "0.0.1"
+source = "git+https://github.com/jperkin/riscv-semihosting?branch=master#4fde9396f72c76f327893d498efd0082bf97a58c"
+dependencies = [
+ "riscv 0.7.0",
 ]
 
 [[package]]
@@ -1951,7 +2082,7 @@ dependencies = [
  "num-traits",
  "pkcs1",
  "pkcs8",
- "rand",
+ "rand 0.8.4",
  "subtle",
  "zeroize",
 ]
@@ -2144,7 +2275,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2807892cfa58e081aa1f1111391c7a0649d4fa127a4ffbe34bcbfb35a1171a4"
 dependencies = [
  "digest",
- "rand_core",
+ "rand_core 0.6.3",
 ]
 
 [[package]]
@@ -2152,6 +2283,19 @@ name = "smallvec"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
+
+[[package]]
+name = "sparkfun-redv"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "hifive1",
+ "kern",
+ "panic-halt",
+ "riscv 0.7.0",
+ "riscv-rt",
+]
 
 [[package]]
 name = "spd"
@@ -2364,6 +2508,7 @@ name = "task-idle"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
+ "riscv 0.7.0",
  "userlib",
 ]
 
@@ -2373,9 +2518,12 @@ version = "0.1.0"
 dependencies = [
  "abi",
  "cortex-m",
+ "cortex-m-semihosting",
  "hubris-num-tasks",
  "num-traits",
  "ringbuf",
+ "riscv 0.7.0",
+ "riscv-semihosting",
  "userlib",
  "zerocopy",
 ]
@@ -2483,6 +2631,8 @@ dependencies = [
  "cortex-m",
  "hubris-num-tasks",
  "num-traits",
+ "riscv 0.7.0",
+ "riscv-semihosting",
  "test-api",
  "userlib",
  "zerocopy",
@@ -2495,6 +2645,8 @@ dependencies = [
  "cortex-m",
  "hubris-num-tasks",
  "num-traits",
+ "riscv 0.7.0",
+ "riscv-semihosting",
  "test-api",
  "userlib",
  "zerocopy",
@@ -2508,6 +2660,8 @@ dependencies = [
  "hubris-num-tasks",
  "hypocalls",
  "num-traits",
+ "riscv 0.7.0",
+ "riscv-semihosting",
  "test-api",
  "userlib",
  "zerocopy",
@@ -2669,6 +2823,7 @@ version = "0.1.0"
 dependencies = [
  "abi",
  "bstringify",
+ "cfg-if 0.1.10",
  "num-derive",
  "num-traits",
  "paste",
