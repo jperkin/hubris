@@ -22,7 +22,7 @@ macro_rules! sys_log {
     };
 }
 
-#[cfg(feature = "log-semihosting")]
+#[cfg(all(feature = "log-semihosting", target_arch = "arm"))]
 #[macro_export]
 macro_rules! sys_log {
     ($s:expr) => {
@@ -30,6 +30,17 @@ macro_rules! sys_log {
     };
     ($s:expr, $($tt:tt)*) => {
         { let _ = cortex_m_semihosting::hprintln!($s, $($tt)*); }
+    };
+}
+
+#[cfg(all(feature = "log-semihosting", target_arch = "riscv32"))]
+#[macro_export]
+macro_rules! sys_log {
+    ($s:expr) => {
+        { let _ = riscv_semihosting::hprintln!($s); }
+    };
+    ($s:expr, $($tt:tt)*) => {
+        { let _ = riscv_semihosting::hprintln!($s, $($tt)*); }
     };
 }
 
