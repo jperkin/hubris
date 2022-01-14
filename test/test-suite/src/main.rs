@@ -221,8 +221,10 @@ fn test_fault_badmem() {
 }
 
 fn test_fault_stackoverflow() {
+    #[cfg(target_arch = "arm")]
     let fault = test_fault(AssistOp::StackOverflow, 0);
 
+    #[cfg(target_arch = "arm")]
     match fault {
         FaultInfo::StackOverflow { .. } => {}
         _ => {
@@ -276,8 +278,10 @@ fn test_fault_buserror() {
 
     match fault {
         FaultInfo::BusError { .. } => {}
+        #[cfg(target_arch = "riscv32")]
+        FaultInfo::MemoryAccess { .. } => {}
         _ => {
-            panic!("expected BusFault; found {:?}", fault);
+            panic!("expected BusFault or MemoryAccess; found {:?}", fault);
         }
     }
 }
@@ -291,6 +295,7 @@ fn test_fault_illinst() {
 
 /// Tests that division-by-zero results in a DivideByZero fault
 fn test_fault_divzero() {
+    #[cfg(target_arch = "arm")]
     assert_eq!(test_fault(AssistOp::DivZero, 0), FaultInfo::DivideByZero);
 }
 
@@ -775,10 +780,12 @@ fn test_floating_point(highregs: bool) {
 }
 
 fn test_floating_point_lowregs() {
+    #[cfg(not(target_arch = "riscv32"))]
     test_floating_point(false);
 }
 
 fn test_floating_point_highregs() {
+    #[cfg(not(target_arch = "riscv32"))]
     test_floating_point(true);
 }
 

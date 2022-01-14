@@ -90,6 +90,7 @@ use userlib::*;
 use zerocopy::AsBytes;
 
 /// Helper macro for producing output on stimulus port 8.
+#[cfg(feature = "log-itm")]
 macro_rules! test_output {
     ($s:expr) => {
         unsafe {
@@ -102,6 +103,17 @@ macro_rules! test_output {
             let stim = &mut (*cortex_m::peripheral::ITM::ptr()).stim[8];
             cortex_m::iprintln!(stim, $s, $($tt)*);
         }
+    };
+}
+
+#[cfg(all(feature = "semihosting", target_arch = "riscv32"))]
+#[macro_export]
+macro_rules! test_output {
+    ($s:expr) => {
+        { let _ = riscv_semihosting::hprintln!($s); }
+    };
+    ($s:expr, $($tt:tt)*) => {
+        { let _ = riscv_semihosting::hprintln!($s, $($tt)*); }
     };
 }
 

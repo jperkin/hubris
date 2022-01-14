@@ -1,0 +1,27 @@
+[package]
+edition = "2018"
+readme = "README.md"
+name = "tests-sparkfun-redv"
+version = "0.1.0"
+
+[features]
+semihosting = ["panic-semihosting", "kern/klog-semihosting"]
+
+[dependencies]
+cfg-if = "0.1.10"
+panic-halt = { version = "0.2.0", optional = true }
+panic-semihosting = { version = "0.5.3", optional = true }
+
+[dependencies.kern]
+path = "../../sys/kern"
+default-features = false
+
+[build-dependencies]
+build-util = {path = "../../build/util"}
+
+# this lets you use `cargo fix`!
+[[bin]]
+name = "tests-sparkfun-redv"
+path = "../../app/sparkfun-redv/src/main.rs"
+test = false
+bench = false

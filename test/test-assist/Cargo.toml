@@ -14,8 +14,8 @@ test-api = {path = "../test-api"}
 cortex-m = {version = "0.7", features = ["inline-asm"]}
 
 [target.'cfg(target_arch = "riscv32")'.dependencies]
-riscv = { version = "0.7", features = ["inline-asm"] }
-riscv-semihosting = { git = "https://github.com/jperkin/riscv-semihosting", branch = "master", optional = true }
+riscv = { version = "0.7", features = ["inline-asm", "user-mode"] }
+riscv-semihosting = { git = "https://github.com/jperkin/riscv-semihosting", branch = "master" }
 
 [features]
 itm = [ "userlib/log-itm" ]
