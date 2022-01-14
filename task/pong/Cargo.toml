@@ -12,6 +12,10 @@ drv-user-leds-api = {path = "../../drv/user-leds-api"}
 [target.'cfg(target_arch = "arm")'.dependencies]
 cortex-m = {version = "0.7", features = ["inline-asm"]}
 
+[features]
+default = ["leds"]
+leds = []
+
 [[bin]]
 name = "task-pong"
 test = false
