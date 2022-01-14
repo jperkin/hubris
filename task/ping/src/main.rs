@@ -21,6 +21,7 @@ fn nullread() {
 }
 
 #[inline(never)]
+#[cfg(target_arch = "arm")]
 fn divzero() {
     unsafe {
         // Divide by 0
@@ -31,13 +32,25 @@ fn divzero() {
     }
 }
 
+#[inline(never)]
+#[cfg(target_arch = "riscv32")]
+fn illinst() {
+    unsafe {
+        asm!("unimp");
+    }
+}
+
 #[export_name = "main"]
 fn main() -> ! {
     let peer = PEER.get_task_id();
     const PING_OP: u16 = 1;
     const FAULT_EVERY: u32 = 100;
 
+    #[cfg(target_arch = "arm")]
     let faultme = [nullread, divzero];
+
+    #[cfg(target_arch = "riscv32")]
+    let faultme = [nullread, illinst];
 
     let mut response = [0; 16];
     loop {
