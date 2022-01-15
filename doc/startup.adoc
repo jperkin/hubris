@@ -21,7 +21,8 @@ This means:
 - Jumping to `main`.
 
 On ARMv7-M this sequence is handled by the `cortex_m_rt` crate, which in turn
-uses the `r0` crate to set up Rust variables.
+uses the `r0` crate to set up Rust variables.  On RISC-V it is handled by the
+`riscv_rt` crate, which again uses the `r0` crate to set up Rust variables.
 
 == `main`: bring your own
 

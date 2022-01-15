@@ -70,7 +70,17 @@ where we can refer to them as needed.
 
 === RISC-V
 
-Syscalls are invoked using the `ECALL` instruction. The rest is TBD.
+Syscalls are invoked using the `ECALL` instruction.
+
+Syscalls provide for up to 7 arguments and 8 return values in registers.
+Syscalls never use arguments from the stack, to make it easier to reason about
+possible memory management faults during syscall entry (i.e. now there aren't
+any).
+
+Arguments to syscalls are passed in `a0` through `a6`, with the syscall index
+in `a7`.
+
+Return values from syscalls are returned in `a0` through `a7`.
 
 == Syscalls
 

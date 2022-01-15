@@ -170,6 +170,9 @@ conditional.)
 Porting the kernel to support Cortex-M3 or Cortex-M0+ would be straightforward
 and we'll probably do it eventually.
 
+Hubris also has initial support for the Freedom E310 RISC-V core as found on
+the HiFive1 RevB and Sparkfun RED-V boards.
+
 ### Can Hubris run on an ARM Cortex part without a Memory Protection Unit (MPU)?
 
 Short answer: not at the moment.
@@ -209,14 +212,10 @@ different from earlier ARM parts or the modern Cortex-A/R lines.
 This means that, at the moment, Hubris won't run on your Game Boy Advance,
 Nintendo DS, or Apple Newton.
 
-### Why not support RISC-V?
+### Does Hubris support RISC-V?
 
-In short, because we couldn't buy a RISC-V-based microcontroller that met our
-needs at the time that we had to commit to a processor. We hope to switch our
-products to RISC-V as soon as practical. Hubris was designed to be compatible
-with the microcontroller-class RV32I cores with physical memory protection, but
-actually supporting them would take a lot of paperwork -- particularly in
-Humility.
+Hubris runs on RV32I systems such as the Freedom E310 core.  However there is
+currently no support in Humility for RISC-V and so practical usage is limited.
 
 ### Can Hubris run under QEMU?
 

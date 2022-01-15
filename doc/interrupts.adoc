@@ -2,8 +2,8 @@
 
 This chapter discusses the role of CPU interrupts in Hubris and applications.
 We'll be using some ARM-inspired terminology, because that's the most mature
-Hubris port, but these ideas are intended to translate to RISC-V systems using
-controllers like the PLIC.
+Hubris port, but these ideas also translate to RISC-V systems using controllers
+like the PLIC.
 
 == Interrupts vs Exceptions
 
